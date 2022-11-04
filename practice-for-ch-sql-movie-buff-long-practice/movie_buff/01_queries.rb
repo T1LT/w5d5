@@ -6,7 +6,7 @@ def it_was_ok
   # You can use ranges (a..b) inside a where method.
   #
   # Find the id, title, and score of all movies with scores between 2 and 3.
-
+  Movie.select(:id, :title, :score).where("score between 2 and 3")
 end
 
 def harrison_ford
@@ -20,7 +20,7 @@ def harrison_ford
   #
   # Find the id and title of all movies in which Harrison Ford appeared but not
   # as a lead actor.
-
+  Movie.select(:id, :title).joins(:actors).where("actors.name = 'Harrison Ford' and castings.ord != 1")
 end
 
 def biggest_cast
@@ -37,7 +37,7 @@ def biggest_cast
   #
   # Find the id and title of the 3 movies with the largest casts (i.e., most
   # actors).
-  
+  Movie.select(:id, :title).joins(:actors).group(:id).order("count(castings.movie_id) DESC").limit(3)
 end
 
 def directed_by_one_of(them)
@@ -49,12 +49,21 @@ def directed_by_one_of(them)
   #
   # Active Record gives you an even better way to write this:
   #
-  # Movie.where(yr: years)
+  # Movie.where({ yr: years })
   #
   # Find the id and title of all the movies directed by one of 'them'.
   
   # Note: Directors appear in the 'actors' table.
-
+  # select id, title from movies join actors on actors.id = movies.director_id
+  # where actors.name in them
+  Movie.select(:id, :title).joins(:director).where('actors.name in (?)', them)
+  # str = <<-SQL 
+  #   select movies.id, title
+  #   from movies
+  #   join actors on actors.id = movies.director_id
+  #   where actors.name in (?);
+  # SQL
+  # Movie.find_by_sql([str, them])
 end
 
 def movie_names_before_1940
@@ -68,5 +77,5 @@ def movie_names_before_1940
   # improve performance for larger queries.
   #
   # Use pluck to find the title of all movies made before 1940.
-
+  Movie.where("yr < 1940").pluck(:title)
 end
