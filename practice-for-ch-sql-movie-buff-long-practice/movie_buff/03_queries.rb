@@ -2,13 +2,27 @@ def what_was_that_one_with(those_actors)
   # Find the movies starring all `those_actors` (an array of actor names).
   # Show each movie's title and id.
   
+  # getting movies where any actors in here
+  # ensure to get all the actors in the movie
+  # exclude movies that didnt have those_actors
+  # look at distinct movie names
+  # x ^ y => !x v !y
+
+  # group by movie_id
+  # count how many are in each one
+  Movie
+    .select(:title, :id)
+    .joins(:actors)
+    .where("actors.name in (?)", those_actors)
+    .group(:id)
+    .having("count(movies.id) = ?", those_actors.length)
 end
 
 def golden_age
   # Find the decade with the highest average movie score.
   # HINT: Use a movie's year to derive its decade. Remember that you can use
   # arithmetic expressions in SELECT clauses.
-  
+  Movie.select("(yr / 10) * 10 as decade").group("decade").order("avg(score) desc").limit(1)
 end
 
 def costars(name)
